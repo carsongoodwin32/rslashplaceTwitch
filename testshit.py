@@ -46,5 +46,5 @@ while True:
             time.sleep(1)
             #time.sleep(1 / 10)
             # Save the updated image to your_image.png
-    time.sleep(1 / 10)
+    time.sleep(1/20)
     # Wait for a moment to control the update rate # Adjust as needed for your desired frame rate

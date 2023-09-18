@@ -2,12 +2,13 @@ from twitchAPI import Twitch
 from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.types import AuthScope, ChatEvent
 from twitchAPI.chat import Chat, EventData, ChatMessage, ChatSub, ChatCommand
-import asyncio
+import asyncio, csv
 
 APP_ID = ''
 APP_SECRET = ''
 USER_SCOPE = [AuthScope.CHAT_READ, AuthScope.CHAT_EDIT]
-TARGET_CHANNEL = '16mega'
+TARGET_CHANNEL = ''
+CSV_FILENAME = "commandstream.csv"
 
 
 # this will be called when the event READY is triggered, which will be on bot start
@@ -38,6 +39,29 @@ async def test_command(cmd: ChatCommand):
     else:
         await cmd.reply(f'{cmd.user.name}: {cmd.parameter}')
 
+async def test_command2(cmd: ChatCommand):
+    try:
+        # Split the command into x, y, r, g, and b values
+        x, y, r, g, b = map(int, cmd.parameter.split(','))
+
+        # Check if x and y are within the valid range (0-100)
+        if 0 <= x <= 100 and 0 <= y <= 100:
+            # Check if r, g, and b are within the valid range (0-255)
+            if 0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255:
+                # Append the new color data to the CSV file
+                with open(CSV_FILENAME, mode="a", newline="") as csv_file:
+                    csv_writer = csv.writer(csv_file)
+                    csv_writer.writerow([x, y, r, g, b])
+                await cmd.reply(f"Added ({x},{y}): ({r},{g},{b}) to {CSV_FILENAME}")
+            else:
+                await cmd.reply("Invalid color values. Use values between 0 and 255.")
+        else:
+            await cmd.reply("Invalid x or y values. Use values between 0 and 100.")
+    except ValueError:
+        await cmd.reply("Invalid command format. Use 'x,y,r,g,b' (e.g., '10,20,255,0,0').")
+
+
+
 
 # this is where we set up the bot
 async def run():
@@ -62,6 +86,7 @@ async def run():
 
     # you can directly register commands and their handlers, this will register the !reply command
     chat.register_command('reply', test_command)
+    chat.register_command('place', test_command2)
 
 
     # we are done with our setup, lets start this bot up!
